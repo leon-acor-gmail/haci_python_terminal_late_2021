@@ -1,10 +1,10 @@
 import re, json, hashlib, getpass, base64, mysql.connector
 
 mydb = mysql.connector.connect(
-  host="localhost",
-  user="usr_haci",
-  password="$]tw}pUKa_B>&[k#ajNV8Q9d]hWW&%g?",
-  database="db_haci"
+  host="xxxx",
+  user="xxxx",
+  password="xxxx",
+  database="xxxx"
 )
 
 def fn_except_message(fn):
