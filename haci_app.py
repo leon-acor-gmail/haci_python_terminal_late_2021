@@ -1,4 +1,11 @@
-import re, json, hashlib, getpass, base64
+import re, json, hashlib, getpass, base64, mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="usr_haci",
+  password="$]tw}pUKa_B>&[k#ajNV8Q9d]hWW&%g?",
+  database="db_haci"
+)
 
 def fn_except_message(fn):
     print('\n'+'ATENCIÓN: Debes escribir solo 1 para "si" y 2 para "no"'+'---origen:'+fn)
@@ -37,14 +44,25 @@ def fn_is_user(int_is_user):
         print('\n\n\n'+'BIENVENIDO A HAGAMOS CINE - ACCEDER A LA PLATAFORMA')
         str_email = input('\n'+'Escribe tu correo'+'\n')
         if fn_validate_email(str_email):
-            str_pwd = input('\n'+'Escribe tu contraseña'+'\n')
-            #str_pwd = getpass.getpass()
+            #str_pwd = input('\n'+'Escribe tu contraseña'+'\n')
+            str_pwd = getpass.getpass()
             if fn_validate_pwd(str_pwd):
                 obj_json = {'email':str_email,'pwd':hashlib.md5(str_pwd.encode()).hexdigest()}
-                str_json = json.dumps(obj_json)
-                str_base64 = base64.b64encode(str_json.encode('ascii'))
-                print(str_base64)
-                print('\n'+'Acceso concedido')
+
+                #DE USO EXCLUSIVO PARA LENGUAJES DE EJECUCIÓN EN EL CLIENTE
+                #str_json = json.dumps(obj_json)
+                #str_base64 = base64.b64encode(str_json.encode('ascii'))
+
+                mycursor = mydb.cursor()
+                sql = 'SELECT COUNT(email) AS L1 FROM schUsuarios WHERE estatus = 1 AND email = %s AND contrasena = %s;'
+                adr = (obj_json['email'],obj_json['pwd'],)
+                mycursor.execute(sql, adr)
+                myresult = mycursor.fetchall()
+                for x in myresult:
+                    if x[0]==1:
+                        print('\n'+'Acceso concedido - BIENVENIDO A HOME')
+                    else:
+                        print('\n'+'ERROR: Verifica tus credenciales')
             else:
                 print('\n'+'ERROR: Tu contraseña debe de tener más de 8 letras y/o simbolos y menos de 24 letrasy/o simbolos')
                 fn_is_user(int(fn_print_header()))
@@ -57,14 +75,30 @@ def fn_is_user(int_is_user):
         if fn_validate_name(str_nam):
             str_email = input('\n'+'Escribe tu correo'+'\n')
             if fn_validate_email(str_email):
-                str_pwd = input('\n'+'Escribe tu contraseña'+'\n')
-                #str_pwd = getpass.getpass()
+                #str_pwd = input('\n'+'Escribe tu contraseña'+'\n')
+                str_pwd = getpass.getpass()
                 if fn_validate_pwd(str_pwd):
                     obj_json = {'name':str_nam,'email':str_email,'pwd':hashlib.md5(str_pwd.encode()).hexdigest()}
-                    str_json = json.dumps(obj_json)
-                    str_base64 = base64.b64encode(str_json.encode('ascii'))
-                    print(str_base64)
-                    print('\n'+'Registro exitoso')
+
+                    #DE USO EXCLUSIVO PARA LENGUAJES DE EJECUCIÓN EN EL CLIENTE
+                    #str_json = json.dumps(obj_json)
+                    #str_base64 = base64.b64encode(str_json.encode('ascii'))
+
+                    mycursor = mydb.cursor()
+                    sql = 'SELECT COUNT(email) AS L1 FROM schUsuarios WHERE estatus = 1 AND email = %s;'
+                    adr = (obj_json['email'],)
+                    mycursor.execute(sql, adr)
+                    myresult = mycursor.fetchall()
+                    for x in myresult:
+                        if x[0]==1:
+                            print('\n'+'ERROR: El usuario ya existe')
+                        else:
+                            mycursor = mydb.cursor()
+                            sql = 'INSERT INTO schUsuarios (name, email, contrasena) VALUES (%s, %s, %s);'
+                            val = (obj_json['name'],obj_json['email'],obj_json['pwd'],)
+                            mycursor.execute(sql, val)
+                            mydb.commit()
+                            print(mycursor.rowcount, '\n'+'Nuevo usuario - BIENVENIDO A HOME')
                 else:
                     print('\n'+'ERROR: Tu contraseña debe de tener más de 8 letras y/o simbolos y menos de 24 letrasy/o simbolos')
                     fn_is_user(int(fn_print_header()))
